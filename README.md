@@ -1,2 +1,2 @@
-# generative-art
+# sketchbook
 generative art experiments with rust
