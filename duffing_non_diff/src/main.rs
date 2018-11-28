@@ -29,8 +29,8 @@ fn main() {
     let ctx = Context::new(&surface);
 
     // background
-    //ctx.set_source_rgb(250.0, 250.0, 250.0);
-    //ctx.paint();
+    ctx.set_source_rgb(0.0, 0.0, 0.0);
+    ctx.paint();
 
     for _i in 0..N_STRUCTS {
         let (xi, yi) = init_generator();
