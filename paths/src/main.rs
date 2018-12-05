@@ -1,7 +1,10 @@
 #[allow(dead_code)]
 extern crate cairo;
+extern crate rand;
 
 use cairo::{Context, Format, ImageSurface};
+use rand::distributions::{Distribution, Uniform};
+use std::fmt;
 use std::fs::File;
 use std::time::SystemTime;
 use std::vec::Vec;
@@ -13,6 +16,12 @@ const SMOOTH_FACTOR: f64 = -10.0;
 struct Point {
     x: f64,
     y: f64,
+}
+
+impl fmt::Debug for Point {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "({}, {})", self.x, self.y)
+    }
 }
 
 fn main() {
@@ -59,12 +68,20 @@ fn main() {
     ctx.set_source_rgb(1.0, 1.0, 1.0);
     ctx.stroke();
 
+    let gen_points =
+        gen_random_uniform_dist(Point { x: 1.0, y: 1.0 }, Point { x: 1103.0, y: 2.0 }, 15);
+    println!("{:?}", gen_points);
+    let ctc = fitting_path(gen_points, SMOOTH_FACTOR, ctx.clone());
+    ctx.set_source_rgb(1.0, 1.0, 1.0);
+    ctx.stroke();
+
     let fname: String = String::from(format!("paths_{:?}.png", start_time.unwrap()));
     let mut f = File::create(fname).expect("Err creating new file");
     surface.write_to_png(&mut f).expect("Err writing to file");
 }
 
 fn fitting_path(points: Vec<Point>, smooth_f: f64, ctx: Context) -> Context {
+    if 
     for (i, _) in points.iter().enumerate() {
         // starting point
         if i == 0 {
@@ -91,4 +108,25 @@ fn fitting_path(points: Vec<Point>, smooth_f: f64, ctx: Context) -> Context {
         );
     }
     ctx
+}
+
+// returns set of random points from 'start' to 'end', where y is constant and x
+// is defined by the distribution of points
+fn gen_random_uniform_dist(start: Point, end: Point, coarse: u8) -> Vec<Point> {
+    let mut points: Vec<Point> = Vec::new();
+    let between = Uniform::from(1..10);
+    let mut rng = rand::thread_rng();
+    for i in 0..end.x as u8 {
+        if i % coarse != 0 {
+            continue;
+        }
+        let sampled = between.sample(&mut rng);
+        let point = Point {
+            x: sampled as f64,
+            y: start.y,
+        };
+        points.push(point);
+    }
+
+    points
 }
